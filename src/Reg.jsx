@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useState } from "react";
+import api from "./config/axios";
 
 function Reg() {
 
@@ -15,18 +15,28 @@ function Reg() {
 
     const submit = async () => {
         try {
+            let res;
+            const registerPaths = ["/register", "/api/register"];
 
-            const API_URL =
-                process.env.NODE_ENV === "development"
-                    ? "http://localhost:8080"
-                    : "https://cabsystems-1.onrender.com";
+            for (const path of registerPaths) {
+                try {
+                    res = await api.post(path, data);
+                    break;
+                } catch (err) {
+                    if (err?.response?.status !== 404) {
+                        throw err;
+                    }
+                }
+            }
 
-            const res = await axios.post(`${API_URL}/register`, data);
+            if (!res) {
+                throw new Error("Registration endpoint not found on backend");
+            }
 
             alert(res.data);
 
         } catch (xyz) {
-            alert(xyz.response?.data || "Error");
+            alert(xyz.response?.data || xyz.message || "Error");
         }
     };
 
